@@ -42,102 +42,98 @@ type numbers struct {
 
 %%
 	prod_principal:
-			instr_start instrucciones
-		;
+		instr_start instrucciones
+	;
 
 	instr_start:
-			nlinea_op IDENTIFIER START numerosDir nlinea_op {
-								if yylex.(*yylexer).firstparse == true	{
-										pc = $4
-										format4 = false
-										util.GetAssembler().Progname = $2
-										util.GetAssembler().StartAddrs = $4
-										util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) - 1,pc)
-										util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) ,pc)
-
-									}
-							}
-		;
+		nlinea_op IDENTIFIER START numerosDir nlinea_op {
+			if yylex.(*yylexer).firstparse == true	{
+				pc = $4
+				format4 = false
+				util.GetAssembler().Progname = $2
+				util.GetAssembler().StartAddrs = $4
+				util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) - 1,pc)
+				util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) ,pc)
+			}
+		}
+	;
 	instrucciones:
-			/*epsilon*/
-		|	etiqueta_op formato {
+		/*epsilon*/
+	|	etiqueta_op formato {
+			if yylex.(*yylexer).firstparse == true {
+				if yylex.(*yylexer).yyerrok == false {
+					util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) ,pc)
+				}else{
+					yylex.(*yylexer).yyerrok = false
+				}
+			}
+		}
+	instrucciones
 
-							if yylex.(*yylexer).firstparse == true	{
-									if yylex.(*yylexer).yyerrok == false {
-										util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) ,pc)
-
-									}else
-									{
-										yylex.(*yylexer).yyerrok = false
-									}
-								}
-						}
-						instrucciones
-
-		|	etiqueta_op directiva {
-							if yylex.(*yylexer).firstparse == true	{
-										if yylex.(*yylexer).yyerrok == false {
-											util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) ,pc)
-										}else{
-											yylex.(*yylexer).yyerrok = false
-										}
-									}
-							}
-							instrucciones
-		;
+	|	etiqueta_op directiva {
+			if yylex.(*yylexer).firstparse == true {
+				if yylex.(*yylexer).yyerrok == false {
+					util.GetTabSim().AddProgpc(int64(yylex.(*yylexer).tlineidx) ,pc)
+				}else{
+					yylex.(*yylexer).yyerrok = false
+				}
+			}
+		}
+		instrucciones
+	;
 	instr_end:
-			END nlinea_op
-		|	END IDENTIFIER nlinea_op {
-				util.GetAssembler().Endinstr($2)
+		END nlinea_op
+	|	END IDENTIFIER nlinea_op {
+			util.GetAssembler().Endinstr($2)
 		}
-		;
+	;
 	formato:
-			error  {
-				yylex.(*yylexer).Errorf("aaaa")
-				goto yydefault
-					}
-		|	f1 	{
-						if yylex.(*yylexer).isXE	{
-							pc += 1
-						}else{
-							if yylex.(*yylexer).isXE == false	{
-								yylex.(*yylexer).CompatibilityErr("de formato 1")
-								goto yydefault
-							}
-						}
-					}
-		|	f2	{
-						if yylex.(*yylexer).isXE	{
-							pc += 2
-						}else{
-							if yylex.(*yylexer).isXE == false	{
-								yylex.(*yylexer).CompatibilityErr("de formato 2")
-								goto yydefault
-							}
-						}
-					}
-		|	f3	{
-						pc += 3
-					}
-		| f4	{
-							if yylex.(*yylexer).isXE	{
-									pc += 4
-							}else{
-								if yylex.(*yylexer).isXE == false	{
-										yylex.(*yylexer).CompatibilityErr("de formato 4")
-										goto yydefault
-								}
-							}
+		error {
+			yylex.(*yylexer).Errorf("aaaa")
+			goto yydefault
 		}
-		|	instr_end
-		;
-	f1:
-			F1NEMONICO nlinea_op {
-							if yylex.(*yylexer).firstparse == false && yylex.(*yylexer).isXE == true {
-								util.GetAssembler().Assemblef1(yylex.(*yylexer).tlineidx, util.GetAssembler().GetCodeEntry($1))
-							}
+	|	f1 {
+			if yylex.(*yylexer).isXE {
+				pc += 1
+			}else{
+				if yylex.(*yylexer).isXE == false {
+					yylex.(*yylexer).CompatibilityErr("de formato 1")
+					goto yydefault
+				}
+			}
+		}
+	|	f2 {
+			if yylex.(*yylexer).isXE {
+				pc += 2
+			}else{
+				if yylex.(*yylexer).isXE == false {
+					yylex.(*yylexer).CompatibilityErr("de formato 2")
+					goto yydefault
+				}
+			}
 					}
-		;
+	|	f3 {
+			pc += 3
+		}
+	| 	f4 {
+			if yylex.(*yylexer).isXE {
+				pc += 4
+			}else{
+				if yylex.(*yylexer).isXE == false {
+						yylex.(*yylexer).CompatibilityErr("de formato 4")
+						goto yydefault
+				}
+			}
+		}
+	|	instr_end
+	;
+	f1:
+		F1NEMONICO nlinea_op {
+			if yylex.(*yylexer).firstparse == false && yylex.(*yylexer).isXE == true {
+				util.GetAssembler().Assemblef1(yylex.(*yylexer).tlineidx, util.GetAssembler().GetCodeEntry($1))
+			}
+		}
+	;
 	f2:
 			F2NEMONICO numeros COMMA numeros nlinea_op	{
 							if yylex.(*yylexer).firstparse == false && yylex.(*yylexer).isXE == true {
